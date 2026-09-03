@@ -40,28 +40,15 @@ public class Main {
                         // Keep handling commands from this client
                         while (true) {
 
-                            byte[] buffer = new byte[1024];
+                            // Receive and parse RESP command
+                            String[] parts =
+                                    CommandParser.parse(input);
 
-                            int bytesRead = input.read(buffer);
+                            System.out.println("Received command:");
 
-                            // Client disconnected
-                            if (bytesRead == -1) {
-                                System.out.println(
-                                        "Client disconnected."
-                                );
-                                break;
+                            for (String part : parts) {
+                                System.out.println(part);
                             }
-
-                            // Convert bytes into String
-                            String message =
-                                    new String(buffer, 0, bytesRead);
-
-                            System.out.println(
-                                    "Received: " + message
-                            );
-
-                            // Split command into parts
-                            String[] parts = message.split(" ");
 
                             // -------------------------
                             // SET command
@@ -101,18 +88,30 @@ public class Main {
 
                                 output.flush();
                             }
-                            else if(parts[0].equals("DEL")){
+
+                            // -------------------------
+                            // DEL command
+                            // -------------------------
+                            else if (parts[0].equals("DEL")) {
+
                                 String key = parts[1];
 
-                                String removeValue = data.remove(key);
+                                String removeValue =
+                                        data.remove(key);
 
-                                if(removeValue != null){
+                                if (removeValue != null) {
                                     output.write("1".getBytes());
-                                }else{
+                                } else {
                                     output.write("0".getBytes());
                                 }
+
                                 output.flush();
-                            }else if (parts[0].equals("EXISTS")) {
+                            }
+
+                            // -------------------------
+                            // EXISTS command
+                            // -------------------------
+                            else if (parts[0].equals("EXISTS")) {
 
                                 String key = parts[1];
 
@@ -125,8 +124,6 @@ public class Main {
                                 output.flush();
                             }
                         }
-
-                        clientSocket.close();
 
                     } catch (IOException e) {
 
