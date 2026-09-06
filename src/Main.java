@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
 
         // Shared storage for all clients
-        ConcurrentHashMap<String, String> data =
+        ConcurrentHashMap<String, RedisEntry> data =
                 new ConcurrentHashMap<>();
 
         try {
@@ -58,7 +58,20 @@ public class Main {
                                 String key = parts[1];
                                 String value = parts[2];
 
-                                data.put(key, value);
+                                RedisEntry entry =
+                                        new RedisEntry(value);
+
+                                // SET key value EX seconds
+                                if (parts.length == 5 &&
+                                        parts[3].equals("EX")) {
+
+                                    long seconds =
+                                            Long.parseLong(parts[4]);
+
+                                    entry.setExpirationTime(seconds);
+                                }
+
+                                data.put(key, entry);
 
                                 output.write("+OK\r\n".getBytes());
                                 output.flush();
@@ -71,18 +84,27 @@ public class Main {
 
                                 String key = parts[1];
 
-                                String value = data.get(key);
+                                RedisEntry entry =
+                                        data.get(key);
 
-                                if (value != null) {
+                                if (entry == null) {
 
-                                    output.write(
-                                            ("$"+ value.length()+"\r\n" + value +"\r\n").getBytes()
-                                    );
+                                    output.write("$-1\r\n".getBytes());
+
+                                } else if (entry.isExpired()) {
+
+                                    data.remove(key);
+
+                                    output.write("$-1\r\n".getBytes());
 
                                 } else {
 
+                                    String value =
+                                            entry.getValue();
+
                                     output.write(
-                                            "$-1\r\n".getBytes()
+                                            ("$" + value.length() + "\r\n" +
+                                                    value + "\r\n").getBytes()
                                     );
                                 }
 
@@ -96,7 +118,7 @@ public class Main {
 
                                 String key = parts[1];
 
-                                String removeValue =
+                                RedisEntry removeValue =
                                         data.remove(key);
 
                                 if (removeValue != null) {
@@ -115,12 +137,108 @@ public class Main {
 
                                 String key = parts[1];
 
-                                if (data.containsKey(key)) {
+                                RedisEntry entry =
+                                        data.get(key);
+
+                                if (entry != null &&
+                                        !entry.isExpired()) {
+
                                     output.write(":1\r\n".getBytes());
+
                                 } else {
+
+                                    if (entry != null) {
+                                        data.remove(key);
+                                    }
+
                                     output.write(":0\r\n".getBytes());
                                 }
 
+                                output.flush();
+                            }
+                            else if (parts[0].equals("EXPIRE")) {
+
+                                String key = parts[1];
+
+                                long seconds =
+                                        Long.parseLong(parts[2]);
+
+                                RedisEntry entry =
+                                        data.get(key);
+
+                                if (entry == null ||
+                                        entry.isExpired()) {
+
+                                    output.write(":0\r\n".getBytes());
+
+                                } else {
+
+                                    entry.setExpirationTime(seconds);
+
+                                    output.write(":1\r\n".getBytes());
+                                }
+
+                                output.flush();
+                            }
+                            else if (parts[0].equals("TTL")) {
+
+                                String key = parts[1];
+
+                                RedisEntry entry =
+                                        data.get(key);
+
+                                if (entry == null) {
+
+                                    output.write(":-2\r\n".getBytes());
+
+                                } else if (entry.isExpired()) {
+
+                                    data.remove(key);
+
+                                    output.write(":-2\r\n".getBytes());
+
+                                } else {
+
+                                    long remaining =
+                                            entry.getRemainingSeconds();
+
+                                    output.write(
+                                            (":" + remaining + "\r\n").getBytes()
+                                    );
+                                }
+
+                                output.flush();
+                            }
+                            else if (parts[0].equals("PING")) {
+
+                                output.write("+PONG\r\n".getBytes());
+                                output.flush();
+                            }
+                            else if (parts[0].equals("KEYS")) {
+
+                                StringBuilder response = new StringBuilder();
+
+                                response.append("*")
+                                        .append(data.size())
+                                        .append("\r\n");
+
+                                for (String key : data.keySet()) {
+
+                                    response.append("$")
+                                            .append(key.length())
+                                            .append("\r\n");
+
+                                    response.append(key)
+                                            .append("\r\n");
+                                }
+
+                                output.write(response.toString().getBytes());
+                                output.flush();
+                            }else if (parts[0].equals("FLUSHALL")) {
+
+                                data.clear();
+
+                                output.write("+OK\r\n".getBytes());
                                 output.flush();
                             }
                         }
