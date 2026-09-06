@@ -6,12 +6,55 @@ import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Main {
+    private static ConcurrentHashMap<String, RedisEntry> loadData() {
+
+        try {
+
+            ConcurrentHashMap<String, RedisEntry> data =
+                    PersistenceManager.load();
+
+            System.out.println(
+                    "Loaded " + data.size() +
+                            " entries from disk."
+            );
+
+            return data;
+
+        } catch (IOException e) {
+
+            System.out.println(
+                    "Could not load persisted data."
+            );
+
+            return new ConcurrentHashMap<>();
+        }
+    }
 
     public static void main(String[] args) {
 
         // Shared storage for all clients
-        ConcurrentHashMap<String, RedisEntry> data =
-                new ConcurrentHashMap<>();
+        final ConcurrentHashMap<String, RedisEntry> data =
+                loadData();
+        // Save data when server shuts down
+        Runtime.getRuntime().addShutdownHook(
+                new Thread(() -> {
+
+                    try {
+
+                        PersistenceManager.save(data);
+
+                        System.out.println(
+                                "Data saved before shutdown."
+                        );
+
+                    } catch (IOException e) {
+
+                        System.out.println(
+                                "Could not save data."
+                        );
+                    }
+                })
+        );
 
         try {
             // Create server and listen on port 6379
@@ -72,6 +115,7 @@ public class Main {
                                 }
 
                                 data.put(key, entry);
+                                PersistenceManager.save(data);
 
                                 output.write("+OK\r\n".getBytes());
                                 output.flush();
@@ -120,6 +164,7 @@ public class Main {
 
                                 RedisEntry removeValue =
                                         data.remove(key);
+                                PersistenceManager.save(data);
 
                                 if (removeValue != null) {
                                     output.write(":1\r\n".getBytes());
@@ -174,6 +219,7 @@ public class Main {
                                 } else {
 
                                     entry.setExpirationTime(seconds);
+                                    PersistenceManager.save(data);
 
                                     output.write(":1\r\n".getBytes());
                                 }
@@ -237,6 +283,7 @@ public class Main {
                             }else if (parts[0].equals("FLUSHALL")) {
 
                                 data.clear();
+                                PersistenceManager.save(data);
 
                                 output.write("+OK\r\n".getBytes());
                                 output.flush();
@@ -255,6 +302,7 @@ public class Main {
                 // Start the thread
                 clientThread.start();
             }
+
 
         } catch (IOException e) {
 

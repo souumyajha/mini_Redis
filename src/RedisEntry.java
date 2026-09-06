@@ -3,9 +3,16 @@ public class RedisEntry {
     private String value;
     private long expirationTime;
 
+    // Normal entry without expiration
     public RedisEntry(String value) {
         this.value = value;
         this.expirationTime = -1;
+    }
+
+    // Used when loading data from disk
+    public RedisEntry(String value, long expirationTime) {
+        this.value = value;
+        this.expirationTime = expirationTime;
     }
 
     public String getValue() {
@@ -42,4 +49,7 @@ public class RedisEntry {
         return remaining / 1000;
     }
 
+    public long getExpirationTime() {
+        return expirationTime;
+    }
 }
