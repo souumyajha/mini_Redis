@@ -60,7 +60,7 @@ public class Main {
 
                                 data.put(key, value);
 
-                                output.write("OK".getBytes());
+                                output.write("+OK\r\n".getBytes());
                                 output.flush();
                             }
 
@@ -76,13 +76,13 @@ public class Main {
                                 if (value != null) {
 
                                     output.write(
-                                            value.getBytes()
+                                            ("$"+ value.length()+"\r\n" + value +"\r\n").getBytes()
                                     );
 
                                 } else {
 
                                     output.write(
-                                            "NULL".getBytes()
+                                            "$-1\r\n".getBytes()
                                     );
                                 }
 
@@ -100,9 +100,9 @@ public class Main {
                                         data.remove(key);
 
                                 if (removeValue != null) {
-                                    output.write("1".getBytes());
+                                    output.write(":1\r\n".getBytes());
                                 } else {
-                                    output.write("0".getBytes());
+                                    output.write(":0\r\n".getBytes());
                                 }
 
                                 output.flush();
@@ -116,9 +116,9 @@ public class Main {
                                 String key = parts[1];
 
                                 if (data.containsKey(key)) {
-                                    output.write("1".getBytes());
+                                    output.write(":1\r\n".getBytes());
                                 } else {
-                                    output.write("0".getBytes());
+                                    output.write(":0\r\n".getBytes());
                                 }
 
                                 output.flush();

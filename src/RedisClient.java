@@ -24,7 +24,15 @@ public class RedisClient {
             int bytesRead;
 
             // SET
-            output.write("SET name Soumya".getBytes());
+            output.write(
+                    ("*3\r\n" +
+                    "$3\r\n" +
+                    "SET\r\n" +
+                    "$4\r\n" +
+                    "name\r\n" +
+                    "$6\r\n" +
+                    "Soumya\r\n").getBytes()
+            );
             output.flush();
 
             bytesRead = input.read(buffer);
@@ -34,7 +42,13 @@ public class RedisClient {
             );
 
             // EXISTS
-            output.write("EXISTS name".getBytes());
+            output.write((
+                    "*2\r\n" +
+                    "$6\r\n" +
+                    "EXISTS\r\n" +
+                    "$4\r\n" +
+                    "name\r\n").getBytes()
+            );
             output.flush();
 
             bytesRead = input.read(buffer);
@@ -44,7 +58,12 @@ public class RedisClient {
             );
 
            // DEL
-            output.write("DEL name".getBytes());
+            output.write((
+                    "*2\r\n" +
+                    "$3\r\n" +
+                    "DEL\r\n" +
+                    "$4\r\n" +
+                    "name\r\n").getBytes());
             output.flush();
 
             bytesRead = input.read(buffer);
@@ -54,7 +73,12 @@ public class RedisClient {
             );
 
             // GET after DEL
-            output.write("GET name".getBytes());
+            output.write(
+                    ("*2\r\n" +
+                    "$3\r\n" +
+                    "GET\r\n" +
+                    "$4\r\n" +
+                    "name\r\n").getBytes());
             output.flush();
 
             bytesRead = input.read(buffer);
