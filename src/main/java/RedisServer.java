@@ -26,7 +26,7 @@ public class RedisServer {
     public void start() throws IOException {
 
         ServerSocket serverSocket =
-                new ServerSocket(port);
+                new ServerSocket(port, 50, java.net.InetAddress.getByName("0.0.0.0"));
 
         System.out.println(
                 "Redis server has started on port " + port

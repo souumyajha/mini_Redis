@@ -217,6 +217,21 @@ public class CommandHandler {
                         "\r\n";
             }
         }
+        else if (command.equals("CLIENT")) {
+
+            if (parts.length >= 2 &&
+                    parts[1].equalsIgnoreCase("SETINFO")) {
+
+                return "+OK\r\n";
+            }
+
+            return "-ERR unknown CLIENT subcommand\r\n";
+        }
+
+        else if (command.equals("QUIT")) {
+
+            return "+OK\r\n";
+        }
 
         // Unknown command
         return "-ERR unknown command\r\n";
