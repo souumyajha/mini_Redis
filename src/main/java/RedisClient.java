@@ -207,7 +207,7 @@ public class RedisClient {
 
             Thread.sleep(11000);
 
- GET after expiration
+ //GET after expiration
 
             output.write(
                     ("*2\r\n" +

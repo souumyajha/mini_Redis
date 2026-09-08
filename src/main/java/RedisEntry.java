@@ -1,3 +1,5 @@
+//RedisEntry → stores value + expiration
+
 public class RedisEntry {
 
     private String value;
