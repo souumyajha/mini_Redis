@@ -3,7 +3,6 @@
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.io.ByteArrayInputStream;
 
 
 public class CommandParser {
@@ -110,31 +109,6 @@ public class CommandParser {
             }
 
             totalRead += bytesRead;
-        }
-    }
-
-
-    public static void main(String[] args) throws Exception {
-
-        String message =
-                "*3\r\n" +
-                        "$3\r\n" +
-                        "SET\r\n" +
-                        "$4\r\n" +
-                        "name\r\n" +
-                        "$6\r\n" +
-                        "Soumya\r\n";
-
-        ByteArrayInputStream input =
-                new ByteArrayInputStream(
-                        message.getBytes(StandardCharsets.UTF_8)
-                );
-
-        String[] result =
-                CommandParser.parse(input);
-
-        for (String argument : result) {
-            System.out.println(argument);
         }
     }
 }

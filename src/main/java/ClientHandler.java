@@ -58,6 +58,11 @@ public class ClientHandler implements Runnable {
                 );
 
                 output.flush();
+                if (parts.length > 0 &&
+                        parts[0].equalsIgnoreCase("QUIT")) {
+
+                    break;
+                }
             }
 
         } catch (IOException e) {

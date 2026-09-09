@@ -130,14 +130,30 @@ public class CommandHandler {
         // ---------------- KEYS ----------------
         else if (command.equals("KEYS")) {
 
+            if (parts.length != 2) {
+                return "-ERR wrong number of arguments for 'keys' command\r\n";
+            }
+
+            String pattern = parts[1];
+
             StringBuilder response =
                     new StringBuilder();
 
-            response.append("*")
-                    .append(data.size())
-                    .append("\r\n");
+            java.util.List<String> matchingKeys =
+                    new java.util.ArrayList<>();
 
             for (String key : data.keySet()) {
+
+                if (matchesPattern(key, pattern)) {
+                    matchingKeys.add(key);
+                }
+            }
+
+            response.append("*")
+                    .append(matchingKeys.size())
+                    .append("\r\n");
+
+            for (String key : matchingKeys) {
 
                 byte[] keyBytes =
                         key.getBytes(StandardCharsets.UTF_8);
@@ -235,5 +251,33 @@ public class CommandHandler {
 
         // Unknown command
         return "-ERR unknown command\r\n";
+    }
+    private boolean matchesPattern(
+            String value,
+            String pattern) {
+
+        StringBuilder regex =
+                new StringBuilder("^");
+
+        for (char c : pattern.toCharArray()) {
+
+            if (c == '*') {
+                regex.append(".*");
+
+            } else if (c == '?') {
+                regex.append(".");
+
+            } else {
+                regex.append(
+                        java.util.regex.Pattern.quote(
+                                String.valueOf(c)
+                        )
+                );
+            }
+        }
+
+        regex.append("$");
+
+        return value.matches(regex.toString());
     }
 }
