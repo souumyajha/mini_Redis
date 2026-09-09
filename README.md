@@ -571,6 +571,8 @@ Through this project, I explored:
 - Redis client compatibility
 - Debugging networking issues between Windows and WSL
 
+## Demo:
+![Mini Redis Demo](images/redis-demo.png)
 
 ## 📄 License
 
