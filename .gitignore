@@ -29,6 +29,12 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+# Maven
+target/
+
+# IntelliJ IDEA
 .idea/
 *.iml
+
+# Runtime data
 redis-data.db
